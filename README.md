@@ -1,104 +1,95 @@
 # Poloshope
 
-[![Build status](https://github.com/shopify/poloshope/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Shopify/poloshope/actions/workflows/ci.yml?query=branch%3Amain)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?color=informational)](/.github/CONTRIBUTING.md)
+A Shopify Online Store 2.0 theme experiment that rebuilds Dawn's header with Tailwind CSS and Alpine.js, compiled through Laravel Mix.
 
-[Getting started](#getting-started) |
-[Staying up to date with poloshope changes](#staying-up-to-date-with-dawn-changes) |
-[Developer tools](#developer-tools) |
-[Contributing](#contributing) |
-[Code of conduct](#code-of-conduct) |
-[Theme Store submission](#theme-store-submission) |
-[License](#license)
+![Shopify](https://img.shields.io/badge/Shopify-Dawn%204.0-7AB55C?logo=shopify&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?logo=tailwindcss&logoColor=white)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
 
-Dawn represents a HTML-first, JavaScript-only-as-needed approach to theme development. It's coderasraf's first source available theme with performance, flexibility, and [Online Store 2.0 features](https://www.coderasraf.com/partners/blog/shopify-online-store) built-in and acts as a reference for building Shopify themes.
+## Overview
 
-- **Web-native in its purest form:** Themes run on the [evergreen web](https://www.w3.org/2001/tag/doc/evergreen-web/). We leverage the latest web browsers to their fullest, while maintaining support for the older ones through progressive enhancement—not polyfills.
-- **Lean, fast, and reliable:** Functionality and design defaults to “no” until it meets this requirement. Code ships on quality. Themes must be built with purpose. They shouldn’t support each and every feature in Shopify.
-- **JavaScript not required, fails gracefully:** We extract every bit of speed and functionality out of HTTP, semantic HTML, and CSS before writing our first line of JavaScript. JavaScript can only be used to progressively enhance features.
-- **Server-rendered:** HTML must be rendered by Shopify servers using Liquid. Business logic and platform primitives such as translations and money formatting don’t belong on the client. Async and on-demand rendering of parts of the page is OK, but we do it sparingly as a progressive enhancement.
-- **Functional, not pixel-perfect:** The Web doesn’t require each page to be rendered pixel-perfect by each browser engine. Using semantic markup, progressive enhancement, and clever design, we ensure that themes remain functional regardless of the browser.
+Poloshope started in March 2022 from Shopify's Dawn 4.0.0 theme. The goal was to replace Dawn's stylesheet with a Tailwind CSS utility build and add interactivity with Alpine.js, starting with the site header. It is an early-stage project: the header is rewritten, and the rest of the theme is still stock Dawn.
 
-You can find a more detailed version of our theme code principles in the [contribution guide](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md#theme-code-principles).
+## What Is Custom
 
-## Getting started
+- **Tailwind + Sass build**: `src/scss/app.scss` (Tailwind layers plus header grid styles written in SCSS) and `src/js/app.js` (Alpine.js bootstrap) are compiled by Laravel Mix into `assets/app.css` and `assets/app.js`.
+- **Tailwind content scanning**: `tailwind.config.js` scans `config`, `layout`, `sections`, `snippets`, and `templates` so utility classes used in Liquid are included in the build.
+- **Rebuilt header** (`sections/header.liquid`):
+  - CSS grid layout with logo, menu, and icon areas that reorders on mobile (menu, logo, icons)
+  - Desktop navigation with hover dropdown submenus, styled with Tailwind utilities
+  - Mobile menu button that dispatches an Alpine `toggle-menu` event
+  - Account link and cart button with an Alpine-bound cart count badge (`cart-count-updated` event) and a `toggle-cart` event
+  - Keeps Dawn's Organization and WebSite JSON-LD structured data
+- **New snippet**: `snippets/icon-menu.liquid` (hamburger icon used by the header).
+- **Layout change**: `layout/theme.liquid` loads `app.css` in place of Dawn's `base.css`.
 
-We recommend using Dawn as a starting point for theme development. [Learn more on Shopify.dev](https://shopify.dev/themes/getting-started/create).
+Everything else (product, collection, cart, search, blog, and customer templates) is unmodified Dawn 4.0.0.
 
-> If you're building a theme for the Shopify Theme Store, then you can use Dawn as a starting point. However, the theme that you submit needs to be [substantively different from Dawn](https://shopify.dev/themes/store/requirements#uniqueness) so that it provides added value for merchants. Learn about the [ways that you can use Dawn](https://shopify.dev/themes/tools/dawn#ways-to-use-dawn).
+## Tech Stack
 
-## Staying up to date with Dawn changes
+- Shopify Liquid, Online Store 2.0 (Dawn 4.0.0 base)
+- Tailwind CSS 3
+- Alpine.js 3
+- Sass
+- Laravel Mix 6 (webpack)
 
-Say you're building a new theme off Dawn but you still want to be able to pull in the latest changes, you can add a remote `upstream` pointing to this Dawn repository.
+## Getting Started
 
-1. Navigate to your local theme folder.
-2. Verify the list of remotes and validate that you have both an `origin` and `upstream`:
+### Prerequisites
 
-```sh
-git remote -v
-```
+- Node.js and npm
+- [Shopify CLI](https://shopify.dev/docs/themes/tools/cli)
+- A Shopify development store or Partner account
 
-3. If you don't see an `upstream`, you can add one that points to Shopify's Dawn repository:
-
-```sh
-git remote add upstream https://github.com/Shopify/dawn.git
-```
-
-4. Pull in the latest Dawn changes into your repository:
-
-```sh
-git fetch upstream
-git pull upstream main
-```
-
-## Developer tools
-
-There are a number of really useful tools that the Shopify Themes team uses during development. Dawn is already set up to work with these tools.
-
-### Shopify CLI
-
-[Shopify CLI](https://github.com/Shopify/shopify-cli) helps you build Shopify themes faster and is used to automate and enhance your local development workflow. It comes bundled with a suite of commands for developing Shopify themes—everything from working with themes on a Shopify store (e.g. creating, publishing, deleting themes) or launching a development server for local theme development.
-
-You can follow this [quick start guide for theme developers](https://github.com/Shopify/shopify-cli#quick-start-guide-for-theme-developers) to get started.
-
-### Theme Check
-
-We recommend using [Theme Check](https://github.com/shopify/theme-check) as a way to validate and lint your Shopify themes.
-
-We've added Theme Check to Dawn's [list of VS Code extensions](/.vscode/extensions.json) so if you're using Visual Studio Code as your code editor of choice, you'll be prompted to install the [Theme Check VS Code](https://marketplace.visualstudio.com/items?itemName=Shopify.theme-check-vscode) extension upon opening VS Code after you've forked and cloned Dawn.
-
-You can also run it from a terminal with the following Shopify CLI command:
+### Install
 
 ```bash
-shopify theme check
+git clone https://github.com/coderasraf/poloshope.git
+cd poloshope
+npm install
 ```
 
-### Continuous Integration
+### Build assets
 
-Dawn uses [GitHub Actions](https://github.com/features/actions) to maintain the quality of the theme. [This is a starting point](https://github.com/Shopify/dawn/blob/main/.github/workflows/ci.yml) and what we suggest to use in order to ensure you're building better themes. Feel free to build off of it!
+`package.json` has no build scripts, so run Laravel Mix directly:
 
-#### Shopify/lighthouse-ci-action
+```bash
+npx mix            # development build -> assets/app.css, assets/app.js
+npx mix watch      # rebuild on changes
+npx mix --production
+```
 
-We love fast websites! Which is why we created [Shopify/lighthouse-ci-action](https://github.com/Shopify/lighthouse-ci-action). This runs a series of [Google Lighthouse](https://developers.google.com/web/tools/lighthouse) audits for the home, product and collections pages on a store to ensure code that gets added doesn't degrade storefront performance over time.
+### Preview the theme
 
-#### Shopify/theme-check-action
+```bash
+shopify theme dev --store your-store.myshopify.com
+```
 
-Dawn runs [Theme Check](#Theme-Check) on every commit via [Shopify/theme-check-action](https://github.com/Shopify/theme-check-action).
+`.shopifyignore` keeps `package.json`, `package-lock.json`, and `mix-manifest.json` out of theme uploads.
 
-## Contributing
+## Project Structure
 
-Want to make commerce better for everyone by contributing to Dawn? We'd love your help! Please read our [contributing guide](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md) to learn about our development process, how to propose bug fixes and improvements, and how to build for Dawn.
+```text
+poloshope/
+├── src/
+│   ├── js/app.js          # Alpine.js entry
+│   └── scss/app.scss      # Tailwind layers + header styles
+├── assets/                # Dawn assets + compiled app.css / app.js
+├── config/                # settings_schema.json, settings_data.json
+├── layout/theme.liquid    # loads app.css instead of base.css
+├── sections/header.liquid # Tailwind/Alpine header
+├── snippets/icon-menu.liquid
+├── templates/             # Dawn JSON templates
+├── tailwind.config.js
+└── webpack.mix.js
+```
 
-## Code of conduct
+## Author
 
-All developers who wish to contribute through code or issues, please first read our [Code of Conduct](https://github.com/Shopify/dawn/blob/main/.github/CODE_OF_CONDUCT.md).
-
-## Theme Store submission
-
-The [Shopify Theme Store](https://themes.shopify.com/) is the place where Shopify merchants find the themes that they'll use to showcase and support their business. As a theme partner, you can create themes for the Shopify Theme Store and reach an international audience of an ever-growing number of entrepreneurs.
-
-Ensure that you follow the list of [theme store requirements](https://shopify.dev/themes/store/requirements) if you're interested in becoming a [Shopify Theme Partner](https://themes.shopify.com/services/themes/guidelines) and building themes for the Shopify platform.
+Built by **Ashraf Siddik**, Shopify developer & CRO specialist.
+- Website: [ashraf-siddik.com](https://ashraf-siddik.com)
+- GitHub: [@coderasraf](https://github.com/coderasraf)
 
 ## License
 
-Copyright (c) 2021-present Shopify Inc. See [LICENSE](/LICENSE.md) for further details.
+Based on Shopify's Dawn theme. See [LICENSE.md](LICENSE.md).
